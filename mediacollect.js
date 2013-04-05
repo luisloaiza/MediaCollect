@@ -13,59 +13,12 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var DOWNLOAD_DIR = './downloads/';
 
-exports.getContent2Resize = function (params, onSuccess, onError) {
-	
-	var options = {
-    	host: urllib.parse(params.fileUrl).host,
-    	port: 80,
-    	path: urllib.parse(params.fileUrl).pathname
-	};
-
-	http.get(options, function(res) {
-		var body = '';
-		res.setEncoding('binary');
-
-	    res.on('data', function(data) {
-	    	body+=data;
-        }).on('end', function() {
-        	
-			im.identify({data:body}, function(err, features){
-  				if (err){
-					console.log("error at imagemagick lib");
-					 onError(err);
-					return;
-				}
-				im.resize({
-	                srcData: body,
-	                format: params.format,
-	                dstPath: params.finalPath+params.fileName,
-	                width: params.width,
-	                height:params.height
-
-	            }, function (err, stdout, stderr) {
-	                if (err) 
-					{	
-						onError(err);
-						return;
-					}
-	
-					onSuccess(params.fileName);
-	            });
-			});
-        });
-    }).on('error', function(e) {
-		onError(e.message);
-	});
-};
-exports.getLocalImageContent = function (filePath, onSuccess) {
-
-	im.identify(filePath, function (err, features){
-  		if(features!=null || features!=undefined)
-  			features.filePath=filePath;
-		onSuccess(err, features);
-	});
-}
-
+/**
+* fileUrl : Url from image, jpg, png etc.
+* onSuccess: Callback for result function(imageData, features)
+*				features.width , features.height
+* onError: Callback for error handling
+*/
 exports.getImageContent = function (fileUrl, onSuccess, onError) {
 	
 	var options = {
@@ -122,6 +75,25 @@ exports.getImageContent = function (fileUrl, onSuccess, onError) {
 	});
 }
 
+/**
+* params : 
+*	var params={
+			format:"jpg",
+			finalPath:'../path/images/',
+			imageData:imageData
+	}
+*thumbsList:
+* //array of image versions to save at given directory.
+*	var thumbsList=[];
+*	thumbsList.push({fileName:"nameFile.jpg",width:200,height:300});
+*	thumbsList.push({fileName:"nameFile.jpg",crop:true,width:200,height:300});
+* // You can send an option of CROP=TRUE to force a crop in imagemagick for the give width and height.
+* onSuccess: function(err,success)
+*		
+*		
+*/
+
+thumbsList.push({fileName:"feed"+feedObject.id+"large.jpg",width:largewidth,height:largerheight});
 
 exports.getThumbsFromImageData = function (params,thumbsList, onSuccess) {
 	var thumbprops=thumbsList.shift();
