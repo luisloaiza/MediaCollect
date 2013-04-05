@@ -21,24 +21,20 @@ exports.getContent2Resize = function (params, onSuccess, onError) {
     	path: urllib.parse(params.fileUrl).pathname
 	};
 
-
 	http.get(options, function(res) {
 		var body = '';
 		res.setEncoding('binary');
 
-    res.on('data', function(data) {
-    		body+=data;
-            
+	    res.on('data', function(data) {
+	    	body+=data;
         }).on('end', function() {
         	
 			im.identify({data:body}, function(err, features){
   				if (err){
-					console.log("error in imagemagick");
+					console.log("error at imagemagick lib");
 					 onError(err);
 					return;
 				}
-				
-
 				im.resize({
 	                srcData: body,
 	                format: params.format,
@@ -55,18 +51,10 @@ exports.getContent2Resize = function (params, onSuccess, onError) {
 	
 					onSuccess(params.fileName);
 	            });
-            //finish resize
-			
-
-
 			});
-			//finish size of image & more...
         });
-
-   		
-    }).on('error', function(e) {//handle dns error for domain
-  			console.log("Got error: " + e.message);
-			onError(e.message);
+    }).on('error', function(e) {
+		onError(e.message);
 	});
 };
 exports.getLocalImageContent = function (filePath, onSuccess) {
@@ -89,12 +77,11 @@ exports.getImageContent = function (fileUrl, onSuccess, onError) {
 	http.get(options, function(res) {
 		var body = '';
 		res.setEncoding('binary');
-
-    res.on('data', function(data) {
+    	res.on('data', function(data) {
     		body+=data;
         }).on('end', function() {
         	try{
-        		var localError=null;
+				var localError=null;
 				im.identify({data:body}, function(err, features){
 	  				if (!err){
 	  					onSuccess(body, features);
@@ -105,51 +92,33 @@ exports.getImageContent = function (fileUrl, onSuccess, onError) {
 				});
 				if(localError!=null)
 					throw new Error("magick at identify "+localError);
-			//finish size of image & more...
+			
 			}catch(e){
-				//try donwloading the file and then getting the data
-				console.log("try downloading.. "+fileUrl.split('/').pop());
-
-				// extract the file name
-			    //var file_name = urllib.parse(fileUrl).pathname.split('/').pop();
 			    var file_name = fileUrl.split('/').pop();
-			    // compose the wget command
 			    var wget = 'wget -P ' + DOWNLOAD_DIR + ' ' + fileUrl;
-			    // excute wget using child_process' exec function
-
-			    var child = exec(wget, function(err, stdout, stderr) {
-			        if (err) {
-			        	console.log("error in wget exec "+err.toString());
-			        	onError(err);
-			        }
-			        else{
-			        	try{
-
-
-						var imdata = fs.readFileSync(DOWNLOAD_DIR+file_name, 'binary');
-			        	im.identify({data:imdata}, function(err, features){
-			  				if (err){
-								console.log("error in identify ");
-
-								onError(err);
-								return;
-							}
-							
-							onSuccess(imdata, features);
-						});	
-			        	}
-			        	catch(e){
-			        		onError(e.toString());	
-			        	}
-			        }
-			    });
+			    exec(wget, function(err, stdout, stderr) {
+				    if (err)
+				    	onError(err);
+					else{
+						try{
+							var imdata = fs.readFileSync(DOWNLOAD_DIR+file_name, 'binary');
+				        	im.identify({data:imdata}, function(err, features){
+				  				if (err){
+									onError(err);
+									return;
+								}
+								onSuccess(imdata, features);
+							});	
+				        }
+				        catch(e){
+				        	onError(e.toString());	
+				        }
+				    }
+				});
 			}
         });
-
-   		
-    }).on('error', function(e) {//handle dns error for domain
-  			console.log("Got error: " + e.message);
-			onError(e.message);
+    }).on('error', function(e) {
+		onError(e.message);
 	});
 }
 
@@ -180,9 +149,6 @@ exports.getThumbsFromImageData = function (params,thumbsList, onSuccess) {
 
 		return;
 	}
-
-
-
 	im.resize({
 		srcData: params.imageData,
 		srcPath: params.imageSrc,
@@ -202,5 +168,5 @@ exports.getThumbsFromImageData = function (params,thumbsList, onSuccess) {
 			else
 				onSuccess(null,true);
 		}
-	);//finish resize
+	);
 }
